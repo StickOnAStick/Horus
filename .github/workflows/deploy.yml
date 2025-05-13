@@ -39,7 +39,7 @@ jobs:
             key: ${{ secrets.LINODE_SSH_KEY }}
             port: ${{ secrets.LINODE_PORT }}
             script: |
-                docker load -i /${{ secrets.LINODE_USER }}/horus.tar
+                docker load -i /home/${{ secrets.LINODE_USER }}/horus.tar
                 docker stop horus || true
                 docker rm horus || true
                 docker run -d --name horus -p 80:8080 horus
