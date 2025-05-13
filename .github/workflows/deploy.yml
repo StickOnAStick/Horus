@@ -1,0 +1,45 @@
+name: Build and Deploy to Linode
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Build Docker Image
+          run: docker build -t horus .
+        
+        - name: Save Docker image to tarball
+          run: docker save horus -o horus.tar
+        
+        - name: Upload image to linode and deploy
+          uses: appleboy/scp-action@v0.1.4
+          with:
+            host: ${{ secrets.LINODE_HOST }}
+            username: ${{ secrets.LINODE_USER }}
+            key: ${{ secrets.LINODE_SSH_KEY }}
+            port: ${{ secrets.LINODE_PORT }}
+            source: "horus.tar"
+            target: "/home/${{ secrets.LINODE_USER }}/horus.tar"
+
+        - name: SSH and run Docker Container
+          uses: appleboy/ssh-action@v1.0.0
+          with:
+            host: ${{ secrets.LINODE_HOST }}
+            username: ${{ secrets.LINODE_USER }}
+            key: ${{ secrets.LINODE_SSH_KEY }}
+            port: ${{ secrets.LINODE_PORT }}
+            script: |
+                docker load -i /${{ secrets.LINODE_USER }}/horus.tar
+                docker stop horus || true
+                docker rm horus || true
+                docker run -d --name horus -p 80:8080 horus

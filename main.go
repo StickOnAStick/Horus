@@ -16,7 +16,7 @@ func main() {
 		io.WriteString(w, "Hello world!\n")
 	}
 
-	helloHome := http.FileServer(http.Dir("./static"))
+	helloHome := http.FileServer(http.Dir("/static"))
 
 	http.HandleFunc("/hello", helloWorld)
 	http.Handle("/", helloHome)
