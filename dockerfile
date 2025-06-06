@@ -6,10 +6,10 @@ COPY go.mod ./
 RUN go mod download
 COPY *.go ./
 #Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /horus
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /horus
 
 # Second stage : run
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+FROM gcr.io/distroless/static:nonroot AS build-release-stage
 # Copy the build files over to a new dir in this second image
 COPY --from=build-stage /horus /horus
 # Copy static files
