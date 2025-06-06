@@ -27,16 +27,30 @@ func main() {
 			return
 		}
 
-		err := r.ParseForm()
-		if err != nil {
+		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Failed to parse input data..", http.StatusBadRequest)
 			return
 		}
 
+		// Recieved message
 		text := r.FormValue("text")
-		response := fmt.Sprintf("Recieved: %s", text)
-		w.Header().Set("Content-Type", "text/plain")
-		io.WriteString(w, response)
+		fmt.Println(text)
+
+		// Response
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, `
+			<!DOCTYPE HTML>
+			<html>
+			<head>
+			</head>
+			<body>
+				<h2>Thank you!</h2>
+				<p>You submitted: <strong>%s</strong><p>
+				<a href="/">Back<a>
+			</body>
+			</html>
+			`, text)
+
 	}
 
 	http.HandleFunc("/", hanlde_homepage)
