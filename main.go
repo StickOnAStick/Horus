@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -34,22 +35,17 @@ func main() {
 
 		// Recieved message
 		text := r.FormValue("text")
-		fmt.Println(text)
+		fmt.Printf("Recieved: %s from user!\n", text)
+		clean_text := template.HTMLEscapeString(text)
 
 		// Response
 		w.Header().Set("Content-Type", "text/html")
 		fmt.Fprintf(w, `
-			<!DOCTYPE HTML>
-			<html>
-			<head>
-			</head>
-			<body>
+			<div>
 				<h2>Thank you!</h2>
 				<p>You submitted: <strong>%s</strong><p>
-				<a href="/">Back<a>
-			</body>
-			</html>
-			`, text)
+			</div>
+			`, clean_text)
 
 	}
 
