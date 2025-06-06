@@ -1,0 +1,57 @@
+version: "3.8"
+services:
+
+  goapp:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+  
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    enviornemnt:
+      - KAFKA_CFG_ZOOPKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    
+  
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  
+  postgres:
+    image: postgres:15
+    restart: always
+    envionrment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mydb
+    ports: 
+      - "5432:5432"
+    
+  
+  worker:
+    build:
+      context: ./services/log
+      dockerfile: dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - POSTGRES_DSN=postgres://user:pass@postgres:5432/mydb?sslmode=disable
